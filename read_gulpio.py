@@ -46,10 +46,10 @@ class EpicDataset(torch.utils.data.Dataset):
         seg_list = np.array([int(dist_img / 2.0 + dist_img * x) for x in range(self.frame_size)])
         img_group = []
         for j in seg_list:
-            frame = self.append(frame)
+            frame = self.transform(frames[j])
             img_group.append(frame)
         img_group = np.array(img_group)
-        img_group = img_group.trainspose(3, 0, 1, 2)
+        img_group = img_group.transpose(3, 0, 1, 2)
         label = meta['noun_class']
         return(img_group, label)
 

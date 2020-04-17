@@ -5,14 +5,41 @@ setup_logger()
 import numpy as np
 import cv2
 import random
+import os
+import json
+import torch
 
 from detectron2 import model_zoo
 from detectron2.engine.defaults import DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog
+from detectron2.structures import BoxMode
 
-im = cv2.imread("./input.jpg")
+from gulpio import GulpDirectory
+from epic_kitchens.dataset.epic_dataset import EpicVideoDataset
+from gulpio.transforms import Scale, CenterCrop, Compose, UnitNorm
+
+from read_gulpio import EpicDataset
+
+
+class_type = 'noun'
+rgb_train = EpicVideoDataset('../../epic/data/processed/gulp/rgb_train', class_type)
+transforms = Compose([])
+dataset = EpicDataset(transforms)
+segment_uids = list(rgb_train.gulp_dir.merged_meta_dict.keys())
+exsample_segment = rgb_train.video_segments[10]
+exsample_frames = rgb_train.load_frames(exsample_segment)
+
+
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=True)
+
+for batch_num, (data, label) in enumerate(dataloader):
+    frame = data[0].to('cpu').detach().numpy().copy()
+    frame = frame.transpose(1, 2, 3, 0)
+    frame = np.squeeze(frame)
+    break
+im = frame
 cfg = get_cfg()
 # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml"))
