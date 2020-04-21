@@ -46,7 +46,7 @@ def get_epic_dicts(img_dir):
         height, width = 256, 456#cv2.imread(filename).shape[:2]
         record['file_name'] = file_name
         record['video_id'] = video_id
-        record['frame_id'] = frame_id
+        record['frame'] = frame_id
         record['image_id'] = idx
         record['height'] = height
         record['width'] = width
@@ -98,6 +98,7 @@ if __name__ == '__main__':
     cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # faster, and good enough for this toy dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # only has one class (ballon)
+    cfg.DATASETS.EPIC_KITCHEN = True
 
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     trainer = DefaultTrainer(cfg) 
