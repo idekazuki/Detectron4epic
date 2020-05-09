@@ -46,6 +46,10 @@ class EpicDataset4BBOX(torch.utils.data.Dataset):
         """
         json_file = os.path.join(img_dir, 'EPIC_object_remake_test.csv')
         imgs_anns = pd.read_csv(json_file, index_col=0)
+        #delete wrong data
+        for i in [197843, 197810, 197814, 197975]:
+            imgs_anns = imgs_anns.drop(i, axis=0)
+
         dataset_dicts = []
         for idx, v in enumerate(imgs_anns.itertuples()):
             record = {}
@@ -64,11 +68,12 @@ class EpicDataset4BBOX(torch.utils.data.Dataset):
             asp = [0.2375, 0.23703703703703705, 0.2375, 0.23703703703703705]
             bbox = [int(a * b) for a, b in zip(asp, bbox)]
             bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
+            bbox = [bbox[0], bbox[1], bbox[0]+bbox[2], bbox[3]+bbox[1]]
 
             num_obj = 1
             iscrowd = torch.zeros((num_obj,), dtype=torch.int64)
             idx = torch.tensor([idx])
-            boxes = torch.as_tensor(bbox, dtype=torch.int64)
+            boxes = torch.as_tensor([bbox], dtype=torch.int64)
             labels = torch.tensor([v[1]])
             file_name = [v[3], v[4], str(v[5])]
             video_id = v[4]
@@ -78,18 +83,18 @@ class EpicDataset4BBOX(torch.utils.data.Dataset):
             record['video_id'] = video_id
             record['frame_id'] = frame_id
             record['image_id'] = idx
-            record['height'] = height
-            record['width'] = width
+#            record['height'] = height
+#            record['width'] = width
             record['boxes'] = boxes
             record['labels'] = labels
-            objs = []
-            obj = {
-                'bbox': bbox,
-                'bbox_mode': BoxMode.XYWH_ABS,
-                'category_id': v[1]
-            }
-            objs.append(obj)
-            record['annotations'] = objs
+#            objs = []
+#            obj = {
+#                'bbox': bbox,
+#                'bbox_mode': BoxMode.XYWH_ABS,
+#                'category_id': v[1]
+#            }
+#            objs.append(obj)
+#            record['annotations'] = objs
 
             dataset_dicts.append(record)
         return dataset_dicts
@@ -100,7 +105,7 @@ class EpicDataset4BBOX(torch.utils.data.Dataset):
         frame = val['frame_id']
         uid, frame_id = self._convert_fdata2uid(video_id, frame)
         frames, meta = self.gulp_dataset[str(uid)]
-        image = Image.fromarray(frames[frame_id])
+        image = Image.fromarray(frames[frame_id-1])
         image = image.convert("RGB")
 
         if self.transforms is not None:
